@@ -52,27 +52,28 @@ class HomeViewController: UITableViewController, PeerGroupDelegate {
     }
     
     @IBAction func sync(_ sender: UIButton) {
-        if let peerGroup = peerGroup {
-            print("stop sync")
-            peerGroup.stop()
-            syncButton.setTitle("Sync", for: .normal)
-        } else {
-            print("start sync")
-            let blockStore = try! SQLiteBlockStore.default()
-            let blockChain = BlockChain(network: AppController.shared.network, blockStore: blockStore)
-
-            peerGroup = PeerGroup(blockChain: blockChain)
-            peerGroup?.delegate = self
-
-            for address in usedAddresses() {
-                if let publicKey = address.publicKey {
-                    peerGroup?.addFilter(publicKey)
-                }
-                peerGroup?.addFilter(address.data)
+        guard let wallet = AppController.shared.wallet else { return }
+        var addresses: [String] = []
+        for i in 0..<AppController.shared.externalIndex + 20 {
+            if let address = try? wallet.receiveAddress(index: i) {
+                addresses.append(address.base58)
             }
+        }
 
-            peerGroup?.start()
-            syncButton.setTitle("Stop", for: .normal)
+        syncButton.setTitle("Syncing", for: .normal)
+        APIClient().getUnspentOutputs(withAddresses: addresses) { [weak self] (utxos) in
+            print(utxos)
+
+            let sum = utxos.map {
+                $0.amount
+                }
+                .reduce(0, { (res, amount) -> Decimal in
+                    return res + amount
+                })
+            DispatchQueue.main.async {
+                self?.syncButton.setTitle("Start", for: .normal)
+                self?.balanceLabel.text = "\(sum) tBCH"
+            }
         }
     }
     

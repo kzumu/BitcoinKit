@@ -20,6 +20,9 @@
 		1482B5FA2028314B0098B612 /* KeychainAccess.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1482B5F92028314A0098B612 /* KeychainAccess.framework */; };
 		1482B5FB2028314B0098B612 /* KeychainAccess.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1482B5F92028314A0098B612 /* KeychainAccess.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		293A2453210C6C4C0078B982 /* BitcoinKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 293A2452210C6C4C0078B982 /* BitcoinKit.framework */; };
+		6EA211F2212BB88600DC2CB3 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA211F1212BB88600DC2CB3 /* APIClient.swift */; };
+		6EA211F4212BB8A100DC2CB3 /* UnspentOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA211F3212BB8A000DC2CB3 /* UnspentOutput.swift */; };
+		6EA211F6212BB8BB00DC2CB3 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA211F5212BB8BB00DC2CB3 /* Transaction.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,6 +54,9 @@
 		1482B5F52027A2590098B612 /* CreateWalletViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateWalletViewController.swift; sourceTree = "<group>"; };
 		1482B5F92028314A0098B612 /* KeychainAccess.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KeychainAccess.framework; path = Carthage/Build/iOS/KeychainAccess.framework; sourceTree = "<group>"; };
 		293A2452210C6C4C0078B982 /* BitcoinKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BitcoinKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6EA211F1212BB88600DC2CB3 /* APIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		6EA211F3212BB8A000DC2CB3 /* UnspentOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnspentOutput.swift; sourceTree = "<group>"; };
+		6EA211F5212BB8BB00DC2CB3 /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +92,9 @@
 		14749516201FBC3E006D1CF8 /* Wallet */ = {
 			isa = PBXGroup;
 			children = (
+				6EA211F5212BB8BB00DC2CB3 /* Transaction.swift */,
+				6EA211F3212BB8A000DC2CB3 /* UnspentOutput.swift */,
+				6EA211F1212BB88600DC2CB3 /* APIClient.swift */,
 				14749517201FBC3E006D1CF8 /* AppDelegate.swift */,
 				1482B5F32027A01B0098B612 /* AppController.swift */,
 				1482B5EB20279B3D0098B612 /* HomeViewController.swift */,
@@ -183,9 +192,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6EA211F4212BB8A100DC2CB3 /* UnspentOutput.swift in Sources */,
 				1482B5F020279EAA0098B612 /* SendViewController.swift in Sources */,
 				1482B5F62027A2590098B612 /* CreateWalletViewController.swift in Sources */,
 				14749518201FBC3E006D1CF8 /* AppDelegate.swift in Sources */,
+				6EA211F6212BB8BB00DC2CB3 /* Transaction.swift in Sources */,
+				6EA211F2212BB88600DC2CB3 /* APIClient.swift in Sources */,
 				1482B5EE20279D3D0098B612 /* ReceiveViewController.swift in Sources */,
 				1482B5F220279EB50098B612 /* SettingsViewController.swift in Sources */,
 				1482B5EC20279B3D0098B612 /* HomeViewController.swift in Sources */,
