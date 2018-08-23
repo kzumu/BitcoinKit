@@ -111,7 +111,7 @@ class SendViewController: UIViewController, PeerGroupDelegate {
         let toAddress = try! AddressFactory.create("bchtest:qpj40lr7vyd6vwhtt53wamm4c9695xj8uy0utqngsd")
         guard let wallet = AppController.shared.wallet else { return }
 
-        try! send(toAddress: toAddress, amount: 100, changeAddress: try! wallet.changeAddress(), wallet: wallet,
+        try! ConvenienceSend().send(toAddress: toAddress, amount: 100, changeAddress: try! wallet.changeAddress(), wallet: wallet,
              externalIndexEnd: AppController.shared.externalIndex, internalIndexEnd: AppController.shared.internalIndex, utxos: utxos)
     }
     
@@ -146,82 +146,6 @@ class SendViewController: UIViewController, PeerGroupDelegate {
         let addresses = usedAddresses().map { $0.base58 }
         APIClient().getUnspentOutputs(withAddresses: addresses) { [unowned self] (unspentOutputs) in
             self.utxos = unspentOutputs.map { $0.asUnspentTransaction() }
-        }
-    }
-
-
-    private func send(toAddress: Address, amount: Int64, changeAddress: Address, wallet: HDWallet,
-                      externalIndexEnd: UInt32, internalIndexEnd: UInt32, utxos: [UnspentTransaction]) throws {
-        let usedAddresses: [Address] = { //自分が作成したアドレスの配列
-            var addresses = [Address]()
-            for index in 0..<(externalIndexEnd + 20) { //最後に使用したアドレスの20番後までチェック
-                if let address = try? wallet.receiveAddress(index: index) {
-                    addresses.append(address)
-                }
-            }
-            for index in 0..<(internalIndexEnd + 20) {
-                if let address = try? wallet.changeAddress(index: index) {
-                    addresses.append(address)
-                }
-            }
-            return addresses
-        }()
-
-        let unsignedTx: UnsignedTransaction = {
-            let (selectedUtxos, fee) = selectTx(from: utxos, amount: amount) // TODO: 支払いに使うUtxoを選択
-            let totalAmount: Int64 = selectedUtxos.reduce(0) { $0 + $1.output.value }
-            let change: Int64 = totalAmount - amount - fee
-
-            let toPubKeyHash: Data = toAddress.data
-            let changePubkeyHash: Data = changeAddress.data
-
-            let lockingScriptTo = Script.buildPublicKeyHashOut(pubKeyHash: toPubKeyHash)
-            let lockingScriptChange = Script.buildPublicKeyHashOut(pubKeyHash: changePubkeyHash)
-
-            let toOutput = TransactionOutput(value: amount, lockingScript: lockingScriptTo)
-            let changeOutput = TransactionOutput(value: change, lockingScript: lockingScriptChange)
-
-            // この後、signatureScriptやsequenceは更新される
-            let unsignedInputs = utxos.map { TransactionInput(previousOutput: $0.outpoint, signatureScript: Data(), sequence: UInt32.max) }
-            let tx = Transaction(version: 1, inputs: unsignedInputs, outputs: [toOutput, changeOutput], lockTime: 0)
-            return UnsignedTransaction(tx: tx, utxos: utxos)
-        }()
-
-        let signedTx: Transaction = {
-            let keys = usedKeys()
-            var inputsToSign = unsignedTx.tx.inputs
-            var transactionToSign: Transaction {
-                return Transaction(version: unsignedTx.tx.version, inputs: inputsToSign, outputs: unsignedTx.tx.outputs, lockTime: unsignedTx.tx.lockTime)
-            }
-
-            // Signing
-            let hashType = SighashType.BCH.ALL
-            for (i, utxo) in unsignedTx.utxos.enumerated() {
-                let pubkeyHash: Data = Script.getPublicKeyHash(from: utxo.output.lockingScript)
-
-                let keysOfUtxo: [PrivateKey] = keys.filter { $0.publicKey().pubkeyHash == pubkeyHash }
-                guard let key = keysOfUtxo.first else {
-                    print("No keys to this txout : \(utxo.output.value)")
-                    continue
-                }
-                print("Value of signing txout : \(utxo.output.value)")
-
-                let sighash: Data = transactionToSign.signatureHash(for: utxo.output, inputIndex: i, hashType: SighashType.BCH.ALL)
-                let signature: Data = try! Crypto.sign(sighash, privateKey: key)
-                let txin = inputsToSign[i]
-                let pubkey = key.publicKey()
-
-                let unlockingScript = Script.buildPublicKeyUnlockingScript(signature: signature, pubkey: pubkey, hashType: hashType)
-
-                // TODO: sequenceの更新
-                inputsToSign[i] = TransactionInput(previousOutput: txin.previousOutput, signatureScript: unlockingScript, sequence: txin.sequence)
-            }
-            print("aaaaa",transactionToSign.outputs)
-            return transactionToSign
-        }()
-
-        APIClient().postTx(withRawTx: signedTx.serialized().hex) { (str1, str2) in
-            print("Posted -> \(str1 ?? "") : \(str2 ?? "")")
         }
     }
 }
